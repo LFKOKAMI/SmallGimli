@@ -523,10 +523,10 @@ bool Gimli::check5RPreimageAttack_MatchCapacityPart() {
 	//a random capacity part
 	uint32 cap[8];
 	for (int i = 0; i < 8; i++) {
-		//cap[i] = getRand8();
-		cap[i] = 0;//set as all 0
+		cap[i] = getRand8();
+		//cap[i] = 0;//set as all 0
 	}
-	cout << "challenge capacity part:" << endl;
+	cout << "capacity part challenge:" << endl;
 	cout << hex << cap[0] << " " << cap[1] << " " << cap[2] << " " << cap[3] << endl;
 	cout << hex << cap[4] << " " << cap[5] << " " << cap[6] << " " << cap[7] << endl;
 	
@@ -903,21 +903,7 @@ bool Gimli::check9RPreimageAttackXOF_FindRate() {
 		//compute r[2]
 		isMiddleMatched=fourRoundsOneColumn(s[4], s[5], hash[2], t2, tSize[2],listMiddle, finalSize, finalSize, true,r[0],r[2]);
 		//test r[0], r[2]
-		//cout << hex<<finalSize <<" "<< isMiddleMatched << endl;
-		//system("pause");
 		if (isMiddleMatched) {
-			//cout << "matched in the middle" << endl;
-			/*s[0] = r[0];
-			s[3] = r[2];
-			SPColumn(s, 6, wordSize);
-			SPColumn(s, 6, wordSize);
-			swap(s[0], s[3]);
-			SPColumn(s, 6, wordSize);
-			SPColumn(s, 6, wordSize);
-			cout << s[0] << " " << s[3] << endl;
-			cout << hash[0] << " " << hash[2] << endl;
-			//system("pause");*/
-
 			//store r[0],r[1],r[2],r[3]
 			listRow[cnt].in[0] = i & 0xff;
 			listRow[cnt].in[1] = (i >> 8) & 0xff;
@@ -938,9 +924,7 @@ bool Gimli::check9RPreimageAttackXOF_FindRate() {
 	sort(listRow, listRow + cnt, compare);
 	//cout << "sort is over" << endl;
 	//cout << "count: " <<cnt<< endl;
-	//system("pause");
 
-	//clear listMiddle
 	int index = 0;
 	bool isMatched = false;
 	uint32 matchedNum=0;
@@ -971,19 +955,6 @@ bool Gimli::check9RPreimageAttackXOF_FindRate() {
 		isMiddleMatched = fourRoundsOneColumn(s[4], s[5], hash[3], t3, tSize[3], listMiddle, finalSize, finalSize, true, r[1], r[3]);
 		//test r[1], r[3]
 		if (isMiddleMatched) {
-			//cout << "matched in the middle" << endl;
-			/*s[0] = r[1];
-			s[3] = r[3];
-			SPColumn(s, 6, wordSize);
-			SPColumn(s, 6, wordSize);
-			swap(s[0], s[3]);
-			SPColumn(s, 6, wordSize);
-			SPColumn(s, 6, wordSize);
-			cout << s[0] << " " << s[3] << endl;
-			cout << hash[1] << " " << hash[3] << endl;
-			//system("pause");
-			*/
-
 			//store r[0],r[1],r[2],r[3]
 			CapHalf ch;
 			ch.row[2] = r[0];
@@ -994,11 +965,6 @@ bool Gimli::check9RPreimageAttackXOF_FindRate() {
 			isMatched = binary_search(listRow, listRow + cnt, ch, compare);
 			if (isMatched) {
 				index = binary_search_find_index(listRow, cnt, ch);
-				/*cout << "final found" << endl;
-				cout << listRow[index].in[0] << " ";
-				cout << (i & 0xff) << " ";
-				cout<< listRow[index].in[1] << " ";
-				cout << ((i >> 8) & 0xff) << endl;*/
 
 				uint32 res[12];
 				res[0] = listRow[index].in[0];
@@ -1032,7 +998,7 @@ bool Gimli::check9RPreimageAttackXOF_FindRate() {
 					res[3] == hash[1] &&
 					res[6] == hash[2] &&
 					res[9] == hash[3]) {
-					cout << "match hash challenge!" << endl;
+					cout << "match the hash challenge!" << endl;
 				}
 				else {
 					cout << "Not match!" << endl;
@@ -1080,8 +1046,8 @@ bool Gimli::fourRoundsOneColumn(uint32 y, uint32 z, uint32 outputX, CapHalf* tab
 			//store table[index].in[0]
 			vector<int> vindexset;
 			vindexset.clear();
-			int start = index - 10;
-			int end = index + 10;
+			int start = index - 2;
+			int end = index + 2;
 			if (start < 0)
 				start = 0;
 			if (end >= tableSize)
@@ -1417,7 +1383,6 @@ bool Gimli::zeroInternalDiffAttack18R() {
 	state[2] = getRand32();
 
 	state[6] = state[0] ^ constant[2];
-	//state[6] = getRand32();
 	state[7] = state[1];
 	state[8] = state[2];
 
@@ -1441,97 +1406,59 @@ bool Gimli::zeroInternalDiffAttack18R() {
 		tmpStateNew[i] = stateNew[i];
 	}
 
-	//cout << "A^9:" << endl;
-	//outputState(tmpState);
-	//cout << "B^9:" << endl;
-	//outputState(tmpStateNew);
-
 	//inverse (until S^5)
 	tmpState[0] ^= constant[2];
 	smallSwap(tmpState);
 	inverseSPColumn(tmpState, 12,wordSize);
-
 	inverseSPColumn(tmpState, 12,wordSize);
-
 	bigSwap(tmpState);
 	inverseSPColumn(tmpState, 12,wordSize);
-
 	inverseSPColumn(tmpState, 12,wordSize);
+	tmpState[0] ^= constant[1];
+	smallSwap(tmpState);
+	inverseSPColumn(tmpState, 12, wordSize);
+	inverseSPColumn(tmpState, 12, wordSize);
+	bigSwap(tmpState);
+	inverseSPColumn(tmpState, 12, wordSize);
+	inverseSPColumn(tmpState, 12, wordSize);
+	tmpState[0] ^= constant[0];
+	smallSwap(tmpState);
+	inverseSPColumn(tmpState, 12, wordSize);
 
 	//new state
 	tmpStateNew[0] ^= constant[2];
 	smallSwap(tmpStateNew);
 	inverseSPColumn(tmpStateNew, 12,wordSize);
-
 	inverseSPColumn(tmpStateNew, 12,wordSize);
-
 	bigSwap(tmpStateNew);
 	inverseSPColumn(tmpStateNew, 12,wordSize);
-
 	inverseSPColumn(tmpStateNew, 12,wordSize);
-
-	//further inverse until S^0
-	tmpState[0] ^= constant[1];
-	smallSwap(tmpState);
-	inverseSPColumn(tmpState, 12,wordSize);
-
-	inverseSPColumn(tmpState, 12,wordSize);
-
-	bigSwap(tmpState);
-	inverseSPColumn(tmpState, 12,wordSize);
-
-	inverseSPColumn(tmpState, 12,wordSize);
-
-	tmpState[0] ^= constant[0];
-	smallSwap(tmpState);
-
-	//cout << "A^0.5:" << endl;
-	//outputState(tmpState);
-
-	inverseSPColumn(tmpState, 12,wordSize);
-	//cout << "A^0:" << endl;
-	//outputState(tmpState);
-
-	//new state
 	tmpStateNew[0] ^= constant[1];
 	smallSwap(tmpStateNew);
 	inverseSPColumn(tmpStateNew, 12,wordSize);
-
 	inverseSPColumn(tmpStateNew, 12,wordSize);
-
 	bigSwap(tmpStateNew);
 	inverseSPColumn(tmpStateNew, 12,wordSize);
-
 	inverseSPColumn(tmpStateNew, 12,wordSize);
-
 	tmpStateNew[0] ^= constant[0];
 	smallSwap(tmpStateNew);
-	//cout << "B^0.5:" << endl;
-	//outputState(tmpStateNew);
 	inverseSPColumn(tmpStateNew, 12,wordSize);
-	//cout << "B^0:" << endl;
-	//outputState(tmpStateNew);
 
 	//distinguisher: tmpState[0][8]=tmpState[6][8]
 	//distinguisher: tmpState[1][23]=tmpState[7][23]
 	zeroDiffBit[4] = BIT(tmpState[0], 8) ^ BIT(tmpState[6], 8);
 	zeroDiffBit[5] = BIT(tmpState[1], 23) ^ BIT(tmpState[7], 23);
-
 	zeroDiffBitNew[4] = BIT(tmpStateNew[0], 8) ^ BIT(tmpStateNew[6], 8);
 	zeroDiffBitNew[5] = BIT(tmpStateNew[1], 23) ^ BIT(tmpStateNew[7], 23);
 
 	//forward direction
 	for (int i = 0; i < 2; i++) {
 		SPColumn(state, 12,wordSize);
-
 		SPColumn(state, 12,wordSize);
 		bigSwap(state);
-
 		SPColumn(state, 12,wordSize);
-
 		SPColumn(state, 12,wordSize);
 		smallSwap(state);
-
 		state[0] ^= constant[i + 3];
 	}
 	//cout << "A^17:" << endl;
@@ -1542,15 +1469,11 @@ bool Gimli::zeroInternalDiffAttack18R() {
 
 	for (int i = 0; i < 2; i++) {
 		SPColumn(stateNew, 12,wordSize);
-
 		SPColumn(stateNew, 12,wordSize);
 		bigSwap(stateNew);
-
 		SPColumn(stateNew, 12,wordSize);
-
 		SPColumn(stateNew, 12,wordSize);
 		smallSwap(stateNew);
-
 		stateNew[0] ^= constant[i + 3];
 	}
 	//cout << "B^17:" << endl;
@@ -1577,6 +1500,3 @@ bool Gimli::zeroInternalDiffAttack18R() {
 
 	return true;
 }
-
-
-
